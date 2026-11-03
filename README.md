@@ -33,14 +33,32 @@ Real-world platforms like Spotify and YouTube blend collaborative filtering (lea
 - `favorite_genre`
 - `favorite_mood`
 - `target_energy`
-- `likes_acoustic` (maps to a high or low acousticness target)
-- `target_valence` (planned addition)
+- `target_acousticness`
+- `target_valence`
 
-**Scoring and ranking**
+**Algorithm Recipe**
 
-- Each song gets a score from 0 to 1. Numeric features score `1 - |song - target|`, and genre and mood add a bonus for an exact match.
-- Weights: energy 0.30, mood 0.25, acousticness 0.20, valence 0.15, genre 0.10.
-- Songs are then sorted by score and the top K are returned.
+1. **Input:** a user profile and the songs loaded from `data/songs.csv`.
+2. **Score every song** (a number from 0 to 1) with this formula:
+
+   ```
+   score = 0.30 * (1 - |song.energy       - target_energy|)
+         + 0.20 * (1 - |song.acousticness - target_acousticness|)
+         + 0.15 * (1 - |song.valence      - target_valence|)
+         + 0.25 * (1 if song.mood  == favorite_mood  else 0)
+         + 0.10 * (1 if song.genre == favorite_genre else 0)
+   ```
+
+   Numeric features reward songs that are *close* to the target, not songs with higher or lower values. Mood is weighted above genre because mood describes the listening situation and genre is too narrow in a small catalog.
+3. **Rank:** sort songs by score, highest first. Ties go to the song with the smaller energy gap. Return the top K, each with a short reason for why it was picked.
+
+**Expected biases**
+
+- **Filter bubble:** the system only rewards what the user already said they like, so it will never suggest anything unexpected.
+- **Exact matching:** mood and genre are all-or-nothing, so "focused" counts as no match for "chill", and a metal song gets no credit for a "rock" fan even when the numbers fit.
+- **Mood over genre:** a song with the right mood but the wrong genre can outrank a genre match.
+- **Small catalog:** with only 18 songs, some genres and moods have a single song, so results may repeat or cluster.
+- **Fixed weights:** every user is scored with the same weights, even though some listeners care more about energy and others about mood.
 
 ---
 

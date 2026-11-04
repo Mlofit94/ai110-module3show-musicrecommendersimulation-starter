@@ -21,16 +21,18 @@ Prompts:
 
 ## 3. How the Model Works  
 
-Explain your scoring approach in simple language.  
+The recommender compares every song in the catalog to a simple taste profile and picks the closest matches. It does not use listening history, only what a song sounds like.
 
-Prompts:  
+**What it looks at:** each song's mood, genre, energy, acousticness (how acoustic versus electronic it sounds), and valence (how positive it feels). The user's profile holds a favorite mood, a favorite genre, and a target level for energy, acousticness, and valence.
 
-- What features of each song are used (genre, energy, mood, etc.)  
-- What user preferences are considered  
-- How does the model turn those into a score  
-- What changes did you make from the starter logic  
+**How it scores:** every song earns points out of 1.0.
 
-Avoid code here. Pretend you are explaining the idea to a friend who does not program.
+- A matching mood is worth 0.25 and a matching genre is worth 0.10, all or nothing.
+- For energy (0.30), acousticness (0.20), and valence (0.15), the closer a song is to the user's target, the more points it gets. A song that is too high or too low loses points equally, so closer is better, not higher.
+
+**How it picks:** it scores every song, sorts from highest to lowest, and returns the top five. Each pick comes with a plain-language list of reasons, such as "mood matches (happy) +0.25".
+
+**Changes from the starter:** the starter returned empty results. I implemented CSV loading, the scoring rule, and the ranking, and I replaced the single "likes acoustic" setting with acousticness and valence targets.
 
 ---
 

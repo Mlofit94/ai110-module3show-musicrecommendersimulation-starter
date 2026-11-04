@@ -99,18 +99,57 @@ You can add more tests in `tests/test_recommender.py`.
 
 ## Sample Recommendation Output
 
-Paste a sample of your recommender's output here as a text block so a reader can see what it produces:
+Output of `python -m src.main` for the default pop / happy profile:
 
 ```
-# e.g.:
-# User profile: genre=indie, mood=chill, energy=low
-# Recommendations:
-#   1. ...
-#   2. ...
-#   3. ...
-```
+Loaded songs: 18
 
-**Screenshot or video** *(optional)*: <!-- Insert a screenshot or demo video link here -->
+================================================================
+TOP 5 RECOMMENDATIONS
+Profile: pop / happy
+================================================================
+
+#1  Sunrise City by Neon Echo
+    Score: 0.98 / 1.00
+    Reasons:
+      - mood matches (happy) +0.25
+      - genre matches (pop) +0.10
+      - energy 0.82 vs target 0.80 +0.29
+      - acousticness 0.18 vs target 0.20 +0.20
+      - valence 0.84 vs target 0.80 +0.14
+
+#2  Rooftop Lights by Indigo Parade
+    Score: 0.86 / 1.00
+    Reasons:
+      - mood matches (happy) +0.25
+      - energy 0.76 vs target 0.80 +0.29
+      - acousticness 0.35 vs target 0.20 +0.17
+      - valence 0.81 vs target 0.80 +0.15
+
+#3  Gym Hero by Max Pulse
+    Score: 0.68 / 1.00
+    Reasons:
+      - genre matches (pop) +0.10
+      - energy 0.93 vs target 0.80 +0.26
+      - acousticness 0.05 vs target 0.20 +0.17
+      - valence 0.77 vs target 0.80 +0.15
+
+#4  Concrete Crown by Kid Meridian
+    Score: 0.60 / 1.00
+    Reasons:
+      - energy 0.78 vs target 0.80 +0.29
+      - acousticness 0.12 vs target 0.20 +0.18
+      - valence 0.62 vs target 0.80 +0.12
+
+#5  Night Drive Loop by Neon Echo
+    Score: 0.58 / 1.00
+    Reasons:
+      - energy 0.75 vs target 0.80 +0.28
+      - acousticness 0.22 vs target 0.20 +0.20
+      - valence 0.49 vs target 0.80 +0.10
+
+================================================================
+```
 
 ---
 

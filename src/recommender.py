@@ -61,15 +61,20 @@ def load_songs(csv_path: str) -> List[Dict]:
             songs.append(row)
     return songs
 
-# Weights from the Algorithm Recipe in the README; they add up to 1.0.
-MOOD_POINTS = 0.25
-GENRE_POINTS = 0.10
+# EXPERIMENT (weight shift): energy doubled (0.30 -> 0.60) and genre halved
+# (0.10 -> 0.05). Raw weights now sum to 1.25, so each is divided by 1.25 to
+# keep the total score within 0 to 1. Revert with `git checkout src/recommender.py`.
+_RAW_WEIGHTS = {"mood": 0.25, "genre": 0.05, "energy": 0.60, "acousticness": 0.20, "valence": 0.15}
+_TOTAL = sum(_RAW_WEIGHTS.values())
+MOOD_POINTS = _RAW_WEIGHTS["mood"] / _TOTAL
+GENRE_POINTS = _RAW_WEIGHTS["genre"] / _TOTAL
 NUMERIC_FEATURES = [
     # (song field, user_prefs key, weight)
-    ("energy", "target_energy", 0.30),
-    ("acousticness", "target_acousticness", 0.20),
-    ("valence", "target_valence", 0.15),
+    ("energy", "target_energy", _RAW_WEIGHTS["energy"] / _TOTAL),
+    ("acousticness", "target_acousticness", _RAW_WEIGHTS["acousticness"] / _TOTAL),
+    ("valence", "target_valence", _RAW_WEIGHTS["valence"] / _TOTAL),
 ]
+assert abs(MOOD_POINTS + GENRE_POINTS + sum(w for _, _, w in NUMERIC_FEATURES) - 1.0) < 1e-9
 
 def score_song(user_prefs: Dict, song: Dict) -> Tuple[float, List[str]]:
     """Score one song from 0 to 1 against a user profile and return (score, reasons)."""

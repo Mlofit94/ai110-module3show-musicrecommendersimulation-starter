@@ -2,112 +2,114 @@
 
 ## 1. Model Name  
 
-Give your model a short, descriptive name.  
-Example: **VibeFinder 1.0**  
+**VibeFinder 1.0**
+
+A small, simple music recommender. It matches songs to a taste profile.
 
 ---
 
 ## 2. Intended Use  
 
-Describe what your recommender is designed to do and who it is for. 
+**Goal:** guess which songs from a small list a person would like, based on their favorite mood, genre, and how loud, acoustic, and happy they want the music.
 
-Prompts:  
+**Designed for:**
 
-- What kind of recommendations does it generate  
-- What assumptions does it make about the user  
-- Is this for real users or classroom exploration  
+- Classroom practice and learning how recommenders work.
+- Showing the score for each song so people can see why it was picked.
+
+**Assumes:** the user can describe their taste with five settings. It does not learn from listening history.
+
+**Not for:**
+
+- Real music apps or real users. The song list is far too small.
+- Judging anyone's taste or mood. It only matches numbers and labels.
+- Songs outside the 18 in the list.
 
 ---
 
 ## 3. How the Model Works  
 
-The recommender compares every song in the catalog to a simple taste profile and picks the closest matches. It does not use listening history, only what a song sounds like.
+It scores every song against a taste profile and returns the top five. Each song gets up to 1.0 points.
 
-**What it looks at:** each song's mood, genre, energy, acousticness (how acoustic versus electronic it sounds), and valence (how positive it feels). The user's profile holds a favorite mood, a favorite genre, and a target level for energy, acousticness, and valence.
+- Mood match: 0.25. Genre match: 0.10. All or nothing.
+- Energy (0.30), acousticness (0.20), valence (0.15): the closer to the user's target, the more points.
+- Each pick shows its reasons, like "mood matches (happy) +0.25".
 
-**How it scores:** every song earns points out of 1.0.
-
-- A matching mood is worth 0.25 and a matching genre is worth 0.10, all or nothing.
-- For energy (0.30), acousticness (0.20), and valence (0.15), the closer a song is to the user's target, the more points it gets. A song that is too high or too low loses points equally, so closer is better, not higher.
-
-**How it picks:** it scores every song, sorts from highest to lowest, and returns the top five. Each pick comes with a plain-language list of reasons, such as "mood matches (happy) +0.25".
-
-**Changes from the starter:** the starter returned empty results. I implemented CSV loading, the scoring rule, and the ranking, and I replaced the single "likes acoustic" setting with acousticness and valence targets.
+I also tried energy x2 and genre x0.5, scaled to still add up to 1.0. That version is in the code now. Undo it with `git checkout src/recommender.py`.
 
 ---
 
 ## 4. Data  
 
-Describe the dataset the model uses.  
-
-Prompts:  
-
-- How many songs are in the catalog  
-- What genres or moods are represented  
-- Did you add or remove data  
-- Are there parts of musical taste missing in the dataset  
+- 18 made-up songs in `data/songs.csv`.
+- 15 genres and 13 moods. Most have just 1 song. There is no "sad" mood.
+- Tempo and danceability are in the file but not used.
+- No lyrics, language, or listening history.
 
 ---
 
 ## 5. Strengths  
 
-Where does your system seem to work well  
-
-Prompts:  
-
-- User types for which it gives reasonable results  
-- Any patterns you think your scoring captures correctly  
-- Cases where the recommendations matched your intuition  
+- Works well when mood, genre, and energy agree. Pop, Lofi, and Rock all got the #1 I expected.
+- Loud and quiet users get very different lists.
+- The reasons make it easy to spot mistakes.
 
 ---
 
 ## 6. Limitations and Bias 
 
-Where the system struggles or behaves unfairly. 
-
-Prompts:  
-
-- Features it does not consider  
-- Genres or moods that are underrepresented  
-- Cases where the system overfits to one preference  
-- Ways the scoring might unintentionally favor some users  
+**Weakness:** energy counts too much and mood of the song counts too little. Energy and acousticness move together in this data, so they act like one "loud vs. quiet" setting worth 0.50. Valence is only 0.15. A user who wanted high energy and a sad mood got Gym Hero first. No song is "sad", and the happiness gap cost Gym Hero only about 0.10. Gym Hero made the top 5 for five of the eight profiles.
 
 ---
 
 ## 7. Evaluation  
 
-How you checked whether the recommender behaved as expected. 
+**Profiles I tested**
 
-Prompts:  
+- Normal: High-Energy Pop, Chill Lofi, Deep Intense Rock.
+- Tricky: high energy + "sad", angry + calm acoustic, k-pop/dreamy (not in the data), "Pop " with a typo, and targets outside 0 to 1.
+- Results below use the original weights.
 
-- Which user profiles you tested  
-- What you looked for in the recommendations  
-- What surprised you  
-- Any simple tests or comparisons you ran  
+**What surprised me**
 
-No need for numeric metrics unless you created some.
+- Gym Hero kept showing up, even for people who never asked for it.
+- The "sad" profile got a workout song as #1.
+- "Pop " instead of "pop" dropped the top score from 0.96 to 0.63.
+- Doubling energy barely changed the normal profiles but scrambled the tricky ones.
+
+**Why Gym Hero keeps showing up**
+
+The system is a checklist: mood, genre, energy, acoustic, happy. Gym Hero is pop, loud, and not acoustic. A Happy Pop fan gets a check on genre and energy. It only misses on mood. With just 18 songs, there are few other loud songs to beat it.
+
+**Profile vs. profile**
+
+- **Pop vs. Lofi:** Pop gets loud, bright songs. Lofi gets quiet, acoustic ones. Totally different, as it should be.
+- **Pop vs. Rock:** Both want loud, so Gym Hero is in both. Mood splits them: Sunrise City (happy) for Pop, Storm Runner (intense) for Rock.
+- **Lofi vs. Rock:** Opposites. No songs in common.
+- **Pop vs. "sad":** Same energy target, but "sad" has no matching songs. It just gets the loudest ones, so Gym Hero wins.
+- **Rock vs. angry + calm:** It picks quiet acoustic songs. The numbers beat the mood label, and Iron Cathedral (the angry one) never shows up.
+- **Lofi vs. k-pop/dreamy:** Lofi's best is 0.98. k-pop/dreamy tops out at 0.59 and everything is close. Almost a coin flip.
+- **Pop vs. "Pop " typo:** Same person, but the score drops. A real happy song ends up tied with songs that aren't happy.
+- **Pop vs. out-of-range:** Scores crash from 0.96 to 0.55 at best. Energy 1.8 can't be matched.
 
 ---
 
 ## 8. Future Work  
 
-Ideas for how you would improve the model next.  
-
-Prompts:  
-
-- Additional features or preferences  
-- Better ways to explain recommendations  
-- Improving diversity among the top results  
-- Handling more complex user tastes  
+- **Fix typos:** ignore capitals and extra spaces, so "Pop " counts as "pop".
+- **Add more songs:** include sad and dark ones, and more than one per genre.
+- **Give valence more weight:** so a sad user stops getting workout songs.
 
 ---
 
 ## 9. Personal Reflection  
 
-A few sentences about your experience.  
+**Biggest learning moment:** Gym Hero showing up everywhere. I thought genre was the problem. It wasn't. Energy was, and the data was too small to give other options.
 
-Prompts:  
+**How AI helped:** It wrote code fast and helped me find tricky test profiles. It also caught that doubling energy made my weights add up to 1.25, not 1.0.
 
-- What you learned about recommender systems  
-- Something unexpected or interesting you discovered  
-- How this changed the way you think about music recommendation apps  
+**When I double-checked it:** I ran the code and read the real output. One edit broke the file because of a formatting bug, and running it showed that right away. I also compared the rankings to my own ear.
+
+**What surprised me:** Just five numbers and a sort feel like a real recommender. The "reasons" list helps a lot, because it makes the picks feel explained.
+
+**What I'd try next:** more songs (especially sad ones), more weight on valence, fixing capital-letter typos, and a rule so one song can't fill so many lists.
